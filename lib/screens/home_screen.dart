@@ -4,33 +4,55 @@ import 'package:task_manager/screens/signIn_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+//(title, description, due date, priority)
+
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-  
-  final String title ="";
+
+  final String title = "";
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-
 class _HomeScreenState extends State<HomeScreen> {
+
+//pour gere date
+  //List<DateTime> currentMonthList = List.empty();
+  //DateTime currentDateTime = DateTime.now();
+  
+
   List todos = List.empty();
-  String title ="";
-  String description ="";
+  String title = "";
+  String description = "";
+  String dueDate = "";
+  String priority = "";
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    todos = ["Hello", "Hey There"];
+    todos = ["Hello", "Hey There", DateTime.now().toLocal().toString(), "1"];
   }
 
-  createToDo(){
-    DocumentReference documentReference = FirebaseFirestore.instance.collection("MyTodos").doc(title);
+  createToDo() {
+    DocumentReference documentReference =
+        FirebaseFirestore.instance.collection("MyTodos").doc(title);
     Map<String, String> todoList = {
       "todoTitle": title,
-      "todoDesc": description
+      "todoDesc": description,
+      "date": dueDate,
+      "priority" : priority
     };
 
-    documentReference.set(todoList).whenComplete(() => print("Data stored succesfully"));
+    documentReference
+        .set(todoList)
+        .whenComplete(() => print("Data stored succesfully"));
+  }
+
+  deleteToDo(item) {
+    DocumentReference documentReference =
+        FirebaseFirestore.instance.collection("MyTodos").doc(item);
+
+    documentReference.delete().whenComplete(() => print("Deleted succesfully"));
   }
 
   @override
@@ -39,75 +61,101 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: ListView.builder(
-        shrinkWrap: true,
-        itemCount: todos.length,
-        itemBuilder: (BuildContext context, int index) {
-          return Dismissible(
-            key: Key(index.toString()), 
-            child: Card(
-              elevation: 4,
-              child: ListTile(
-                title: Text(todos[index]),
-                subtitle: Text("Description"),
-                trailing: IconButton(
-                  color: Colors.red,
-                  icon: const Icon(Icons.delete),
-                  onPressed: (){
-                    setState(() {
-                      todos.remove(index);
-                    });
-                  }, 
-                  ),
-              )
-            ));
-        }),
-        floatingActionButton: FloatingActionButton(
-          onPressed: (){
-            showDialog(
-              context: context, 
-              builder: (BuildContext context){
+      body: StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection("MyTodos").snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Text("Something went wrong");
+            } else if (snapshot.hasData || snapshot.data != null) {
+              return ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: snapshot.data?.docs.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    QueryDocumentSnapshot<Object?>? documentSnapshot =
+                        snapshot.data?.docs[index];
+                    return Dismissible(
+                        key: Key(index.toString()),
+                        child: Card(
+                          elevation: 4,
+                          child: ListTile(
+                            title: Text((documentSnapshot != null)
+                                ? (documentSnapshot["todoTitle"])
+                                : ""),
+                            subtitle: Text((documentSnapshot != null)
+                                ? ((documentSnapshot["todoDesc"] != null)
+                                    ? documentSnapshot["todoDesc"]
+                                    : "")
+                                : ""),
+                            trailing: IconButton(
+                              color: Colors.red,
+                              icon: const Icon(Icons.delete),
+                              onPressed: () {
+                                setState(() {
+                                  //todos.remove(index);
+                                  deleteToDo((documentSnapshot != null)
+                                      ? (documentSnapshot["todoTitle"])
+                                      : "");
+                                });
+                              },
+                            ),
+                          ),
+                        ));
+                  });
+            }
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Colors.red,
+                ),
+              ),
+            );
+          }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
                 return AlertDialog(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                      borderRadius: BorderRadius.circular(10)),
                   title: const Text("Add ToDo"),
                   content: Container(
                     width: 480,
                     height: 100,
-                    child:Column(
+                    child: Column(
                       children: [
                         TextField(
-                          onChanged:(String value){
+                          onChanged: (String value) {
                             title = value;
                           },
                         ),
                         TextField(
-                          onChanged: (String value){
+                          onChanged: (String value) {
                             description = value;
                           },
                         ),
                       ],
                     ),
                   ),
-                  actions:<Widget>[
+                  actions: <Widget>[
                     TextButton(
-                      onPressed: (){
-                        setState(() {
-                          //todos.add(title);
-                          createToDo();
-                        });
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text("Add"))
-                  ],     
+                        onPressed: () {
+                          setState(() {
+                            //todos.add(title);
+                            createToDo();
+                          });
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text("Add"))
+                  ],
                 );
               });
-          },
-          child: const Icon(
-            Icons.add,
-            color:Colors.white,
-          ),
+        },
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
         ),
-      );
-   }
+      ),
+    );
+  }
 }
