@@ -41,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
     todos = ["Hello", "Hey There", "PLACEHOLDER", "1"];
   }
 
+// methode todo
   createToDo() {
     DocumentReference documentReference =
         FirebaseFirestore.instance.collection("MyTodos").doc(title);
@@ -63,6 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
     documentReference.delete().whenComplete(() => print("Deleted succesfully"));
   }
 
+//UI
   Widget titleView() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
@@ -312,7 +314,7 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         child: const Icon(
           Icons.add,
-          color: Colors.white,
+          color: Color.fromARGB(255, 220, 39, 39),
         ),
       ),
     );
