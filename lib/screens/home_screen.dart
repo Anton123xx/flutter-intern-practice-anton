@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:task_manager/screens/signIn_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
-
+import '../utils/date_utils.dart' as date_utils;
+import '../utils/colors_utils.dart' as color_utils;
 //(title, description, due date, priority)
-
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,12 +16,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  double width = 0;
+  double height = 0;
 
-//pour gere date
-  //List<DateTime> currentMonthList = List.empty();
-  //DateTime currentDateTime = DateTime.now();
-  
+//pour gerer date
+  List<DateTime> currentMonthList = List.empty();
+  DateTime currentDateTime = DateTime.now();
+  late ScrollController scrollController = ScrollController(initialScrollOffset: 70.0 * currentDateTime.day);
 
+//todo
   List todos = List.empty();
   String title = "";
   String description = "";
@@ -29,8 +32,13 @@ class _HomeScreenState extends State<HomeScreen> {
   String priority = "";
   @override
   void initState() {
+    currentMonthList = date_utils.DateUtils.daysInMonth(currentDateTime);
+    currentMonthList.sort((a, b) => a.day.compareTo(b.day));
+    currentMonthList = currentMonthList.toSet().toList();
+    //scrollController = ScrollController(initialScrollOffset: 70.0 * currentDateTime.day);
     super.initState();
-    todos = ["Hello", "Hey There", DateTime.now().toLocal().toString(), "1"];
+
+    todos = ["Hello", "Hey There", "PLACEHOLDER", "1"];
   }
 
   createToDo() {
@@ -40,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "todoTitle": title,
       "todoDesc": description,
       "date": dueDate,
-      "priority" : priority
+      "priority": priority
     };
 
     documentReference
@@ -55,61 +63,212 @@ class _HomeScreenState extends State<HomeScreen> {
     documentReference.delete().whenComplete(() => print("Deleted succesfully"));
   }
 
+  Widget titleView() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
+      child: Text(
+        date_utils.DateUtils.months[currentDateTime.month - 1] +
+            ' ' +
+            currentDateTime.year.toString(),
+        style: const TextStyle(
+            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+      ),
+    );
+  }
+
+  Widget horizontalCapsuleListView() {
+    return Container(
+      width: width,
+      height: 150,
+      child: ListView.builder(
+        controller: scrollController,
+        scrollDirection: Axis.horizontal,
+        physics: const ClampingScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: currentMonthList.length,
+        itemBuilder: (BuildContext context, int index) {
+          return capsuleView(index);
+        },
+      ),
+    );
+  }
+
+  Widget capsuleView(int index) {
+    return Padding(
+        padding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
+        child: GestureDetector(
+          onTap: () {
+            setState(() {
+              currentDateTime = currentMonthList[index];
+            });
+          },
+          child: Container(
+            width: 80,
+            height: 140,
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    colors: (currentMonthList[index].day != currentDateTime.day)
+                        ? [
+                            Colors.white.withOpacity(0.8),
+                            Colors.white.withOpacity(0.7),
+                            Colors.white.withOpacity(0.6)
+                          ]
+                        : [
+                            color_utils.hexStringToColor("ED6184"),
+                            color_utils.hexStringToColor("EF315B"),
+                            color_utils.hexStringToColor("E2042D")
+                          ],
+                    begin: const FractionalOffset(0.0, 0.0),
+                    end: const FractionalOffset(0.0, 1.0),
+                    stops: const [0.0, 0.5, 1.0],
+                    tileMode: TileMode.clamp),
+                borderRadius: BorderRadius.circular(40),
+                boxShadow: const [
+                  BoxShadow(
+                    offset: Offset(4, 4),
+                    blurRadius: 4,
+                    spreadRadius: 2,
+                    color: Colors.black12,
+                  )
+                ]),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    currentMonthList[index].day.toString(),
+                    style: TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            (currentMonthList[index].day != currentDateTime.day)
+                                ? color_utils.hexStringToColor("465876")
+                                : Colors.white),
+                  ),
+                  Text(
+                    date_utils.DateUtils
+                        .weekdays[currentMonthList[index].weekday - 1],
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color:
+                            (currentMonthList[index].day != currentDateTime.day)
+                                ? color_utils.hexStringToColor("465876")
+                                : Colors.white),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ));
+  }
+
+  Widget topView() {
+    return Container(
+      height: height * 0.35,
+      width: width,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+            colors: [
+              color_utils.hexStringToColor("488BC8").withOpacity(0.7),
+              color_utils.hexStringToColor("488BC8").withOpacity(0.5),
+              color_utils.hexStringToColor("488BC8").withOpacity(0.3)
+            ],
+            begin: const FractionalOffset(0.0, 0.0),
+            end: const FractionalOffset(0.0, 1.0),
+            stops: const [0.0, 0.5, 1.0],
+            tileMode: TileMode.clamp),
+        boxShadow: const [
+          BoxShadow(
+              blurRadius: 4,
+              color: Colors.black12,
+              offset: Offset(4, 4),
+              spreadRadius: 2)
+        ],
+        borderRadius: const BorderRadius.only(
+          bottomRight: Radius.circular(40),
+          bottomLeft: Radius.circular(40),
+        ),
+      ),
+      child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            titleView(),
+            horizontalCapsuleListView(),
+          ]),
+    );
+  }
+
+  Widget toDoListView() {
+    return Container(
+      margin: EdgeInsets.fromLTRB(10, height * 0.38, 10, 10),
+      width: width,
+      height: height * 0.60,
+      child: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection("MyTodos").snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Text("Something went wrong");
+          } else if (snapshot.hasData || snapshot.data != null) {
+            return ListView.builder(
+                shrinkWrap: true,
+                itemCount: snapshot.data?.docs.length,
+                itemBuilder: (BuildContext context, int index) {
+                  QueryDocumentSnapshot<Object?>? documentSnapshot =
+                      snapshot.data?.docs[index];
+                  return Dismissible(
+                      key: Key(index.toString()),
+                      child: Card(
+                        elevation: 4,
+                        child: ListTile(
+                          title: Text((documentSnapshot != null)
+                              ? (documentSnapshot["todoTitle"])
+                              : ""),
+                          subtitle: Text((documentSnapshot != null)
+                              ? ((documentSnapshot["todoDesc"] != null)
+                                  ? documentSnapshot["todoDesc"]
+                                  : "")
+                              : ""),
+                          trailing: IconButton(
+                            color: Colors.red,
+                            icon: const Icon(Icons.delete),
+                            onPressed: () {
+                              setState(() {
+                                //todos.remove(index);
+                                deleteToDo((documentSnapshot != null)
+                                    ? (documentSnapshot["todoTitle"])
+                                    : "");
+                              });
+                            },
+                          ),
+                        ),
+                      ));
+                });
+          }
+          return const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Colors.red,
+              ),
+            ),
+          );
+        }));
+    
+    
+    
+  }
+
   @override
   Widget build(BuildContext context) {
+    height = MediaQuery.of(context).size.height;
+    width = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance.collection("MyTodos").snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return Text("Something went wrong");
-            } else if (snapshot.hasData || snapshot.data != null) {
-              return ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: snapshot.data?.docs.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    QueryDocumentSnapshot<Object?>? documentSnapshot =
-                        snapshot.data?.docs[index];
-                    return Dismissible(
-                        key: Key(index.toString()),
-                        child: Card(
-                          elevation: 4,
-                          child: ListTile(
-                            title: Text((documentSnapshot != null)
-                                ? (documentSnapshot["todoTitle"])
-                                : ""),
-                            subtitle: Text((documentSnapshot != null)
-                                ? ((documentSnapshot["todoDesc"] != null)
-                                    ? documentSnapshot["todoDesc"]
-                                    : "")
-                                : ""),
-                            trailing: IconButton(
-                              color: Colors.red,
-                              icon: const Icon(Icons.delete),
-                              onPressed: () {
-                                setState(() {
-                                  //todos.remove(index);
-                                  deleteToDo((documentSnapshot != null)
-                                      ? (documentSnapshot["todoTitle"])
-                                      : "");
-                                });
-                              },
-                            ),
-                          ),
-                        ));
-                  });
-            }
-            return const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Colors.red,
-                ),
-              ),
-            );
-          }),
+      body: Stack(
+        children: <Widget>[topView(), toDoListView()],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           showDialog(
