@@ -32,8 +32,8 @@ class _HomeScreenState extends State<HomeScreen> {
   List todos = List.empty();
   String title = "";
   String description = "";
-  String dueDate = "";
-  String priority = "";
+  DateTime? dueDate;
+  String priority = "Medium";
 
   @override
   void initState() {
@@ -43,14 +43,14 @@ class _HomeScreenState extends State<HomeScreen> {
     //scrollController = ScrollController(initialScrollOffset: 70.0 * currentDateTime.day);
     super.initState();
 
-    todos = ["Hello", "Hey There", "PLACEHOLDER", "1"];
+    todos = ["Hello", "Hey There", currentDateTime, "Medium"];
   }
 
 // methode todo
   createToDo() {
     DocumentReference documentReference =
         FirebaseFirestore.instance.collection("MyTodos").doc(title);
-    Map<String, String> todoList = {
+    Map<String, dynamic> todoList = {
       "todoTitle": title,
       "todoDesc": description,
       "date": dueDate,
@@ -255,7 +255,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) =>
-                                          const EditTaskScreen())),
+                                          EditTaskScreen(Key(index.toString()),
+                                            (documentSnapshot != null) ? (documentSnapshot["todoTitle"]): ""))),
                               trailing: IconButton(
                                 color: Colors.red,
                                 icon: const Icon(Icons.delete),
