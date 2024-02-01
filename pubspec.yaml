@@ -8,8 +8,11 @@ environment:
 
 dependencies:
   firebase_core: ^2.25.0
+  firebase_auth: ^4.17.0
   flutter:
     sdk: flutter
+  path: ^1.8.3
+  cloud_firestore: ^4.15.0
   
 
 
