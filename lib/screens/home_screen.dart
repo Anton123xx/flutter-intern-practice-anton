@@ -75,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         color: color_utils.hexStringToColor("#EEE451"),
         image: DecorationImage(
-          image: const AssetImage("assets/images/background_TODO.jpeg"),
+          image: const AssetImage("assets/images/background_TODO.jpg"),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
               Colors.black.withOpacity(0.2), BlendMode.saturation),
