@@ -5,6 +5,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import '../utils/date_utils.dart' as date_utils;
 import '../utils/colors_utils.dart' as color_utils;
+import 'accountInfo_screen.dart';
+import 'settings_screen.dart';
+import 'editTask_screen.dart';
 //(title, description, due date, priority)
 
 class HomeScreen extends StatefulWidget {
@@ -22,7 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
 //pour gerer date
   List<DateTime> currentMonthList = List.empty();
   DateTime currentDateTime = DateTime.now();
-  late ScrollController scrollController = ScrollController(initialScrollOffset: 70.0 * currentDateTime.day);
+  late ScrollController scrollController =
+      ScrollController(initialScrollOffset: 70.0 * currentDateTime.day);
 
 //todo
   List todos = List.empty();
@@ -30,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String description = "";
   String dueDate = "";
   String priority = "";
+
   @override
   void initState() {
     currentMonthList = date_utils.DateUtils.daysInMonth(currentDateTime);
@@ -65,6 +70,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 //UI
+  Widget backgroundView() {
+    return Container(
+      decoration: BoxDecoration(
+        color: color_utils.hexStringToColor("#EEE451"),
+        image: DecorationImage(
+          image: const AssetImage("assets/images/background_TODO.jpeg"),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(
+              Colors.black.withOpacity(0.2), BlendMode.saturation),
+        ),
+      ),
+    );
+  }
+
   Widget titleView() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
@@ -203,61 +222,64 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget toDoListView() {
     return Container(
-      margin: EdgeInsets.fromLTRB(10, height * 0.38, 10, 10),
-      width: width,
-      height: height * 0.60,
-      child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection("MyTodos").snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Text("Something went wrong");
-          } else if (snapshot.hasData || snapshot.data != null) {
-            return ListView.builder(
-                shrinkWrap: true,
-                itemCount: snapshot.data?.docs.length,
-                itemBuilder: (BuildContext context, int index) {
-                  QueryDocumentSnapshot<Object?>? documentSnapshot =
-                      snapshot.data?.docs[index];
-                  return Dismissible(
-                      key: Key(index.toString()),
-                      child: Card(
-                        elevation: 4,
-                        child: ListTile(
-                          title: Text((documentSnapshot != null)
-                              ? (documentSnapshot["todoTitle"])
-                              : ""),
-                          subtitle: Text((documentSnapshot != null)
-                              ? ((documentSnapshot["todoDesc"] != null)
-                                  ? documentSnapshot["todoDesc"]
-                                  : "")
-                              : ""),
-                          trailing: IconButton(
-                            color: Colors.red,
-                            icon: const Icon(Icons.delete),
-                            onPressed: () {
-                              setState(() {
-                                //todos.remove(index);
-                                deleteToDo((documentSnapshot != null)
-                                    ? (documentSnapshot["todoTitle"])
-                                    : "");
-                              });
-                            },
-                          ),
-                        ),
-                      ));
-                });
-          }
-          return const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Colors.red,
-              ),
-            ),
-          );
-        }));
-    
-    
-    
+        margin: EdgeInsets.fromLTRB(10, height * 0.38, 10, 10),
+        width: width,
+        height: height * 0.60,
+        child: StreamBuilder<QuerySnapshot>(
+            stream:
+                FirebaseFirestore.instance.collection("MyTodos").snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Text("Something went wrong");
+              } else if (snapshot.hasData || snapshot.data != null) {
+                return ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: snapshot.data?.docs.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      QueryDocumentSnapshot<Object?>? documentSnapshot =
+                          snapshot.data?.docs[index];
+                      return Dismissible(
+                          key: Key(index.toString()),
+                          child: Card(
+                            elevation: 4,
+                            child: ListTile(
+                              title: Text((documentSnapshot != null)
+                                  ? (documentSnapshot["todoTitle"])
+                                  : ""),
+                              subtitle: Text((documentSnapshot != null)
+                                  ? ((documentSnapshot["todoDesc"] != null)
+                                      ? documentSnapshot["todoDesc"]
+                                      : "")
+                                  : ""),
+                              onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const EditTaskScreen())),
+                              trailing: IconButton(
+                                color: Colors.red,
+                                icon: const Icon(Icons.delete),
+                                onPressed: () {
+                                  setState(() {
+                                    //todos.remove(index);
+                                    deleteToDo((documentSnapshot != null)
+                                        ? (documentSnapshot["todoTitle"])
+                                        : "");
+                                  });
+                                },
+                              ),
+                            ),
+                          ));
+                    });
+              }
+              return const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Colors.red,
+                  ),
+                ),
+              );
+            }));
   }
 
   @override
@@ -266,10 +288,32 @@ class _HomeScreenState extends State<HomeScreen> {
     width = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text('TODO'),
+        backgroundColor: Color.fromARGB(255, 129, 118, 226),
+        centerTitle: true,
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.person),
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const AccountInfoScreen()));
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const SettingsScreen()));
+            },
+          ),
+        ],
       ),
       body: Stack(
-        children: <Widget>[topView(), toDoListView()],
+        children: <Widget>[backgroundView(), topView(), toDoListView()],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
