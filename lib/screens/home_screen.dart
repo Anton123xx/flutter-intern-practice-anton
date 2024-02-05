@@ -235,16 +235,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
-
-  /*
-fetchAndFilterCollection() {
-  return FirebaseFirestore.instance
-      .collection('MyTodos')
-      .snapshots()
-      .where((snapshot){snapshot.docs.forEach((data) => data['owner'] == owner);});
-}
-*/
   Widget toDoListView() {
     return Container(
         margin: EdgeInsets.fromLTRB(10, height * 0.38, 10, 10),

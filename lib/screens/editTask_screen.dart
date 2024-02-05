@@ -78,7 +78,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    /*
+                    
                     DropdownButtonFormField<String>(
                       items: priorities.map((String p) {
                         return DropdownMenuItem<String>(
@@ -97,7 +97,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    */
+                    
                     ElevatedButton(
                         onPressed: () async {
                           Map<String, dynamic> taskData = {
