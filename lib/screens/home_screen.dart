@@ -34,16 +34,30 @@ class _HomeScreenState extends State<HomeScreen> {
   String description = "";
   DateTime? dueDate;
   String priority = "Medium";
+  String owner = "";
+
+//gerer current user
+  User? user;
 
   @override
   void initState() {
+//pour gerer date
     currentMonthList = date_utils.DateUtils.daysInMonth(currentDateTime);
     currentMonthList.sort((a, b) => a.day.compareTo(b.day));
     currentMonthList = currentMonthList.toSet().toList();
     //scrollController = ScrollController(initialScrollOffset: 70.0 * currentDateTime.day);
     super.initState();
 
+//todo
     todos = ["Hello", "Hey There", currentDateTime, "Medium"];
+
+//gerer current user
+    user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      owner = user!.uid.toString();
+    } else {
+      owner = "null";
+    }
   }
 
 // methode todo
@@ -54,7 +68,8 @@ class _HomeScreenState extends State<HomeScreen> {
       "todoTitle": title,
       "todoDesc": description,
       "date": dueDate,
-      "priority": priority
+      "priority": priority,
+      "owner": owner
     };
 
     documentReference
@@ -220,17 +235,27 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+
+
+  /*
+fetchAndFilterCollection() {
+  return FirebaseFirestore.instance
+      .collection('MyTodos')
+      .snapshots()
+      .where((snapshot){snapshot.docs.forEach((data) => data['owner'] == owner);});
+}
+*/
   Widget toDoListView() {
     return Container(
         margin: EdgeInsets.fromLTRB(10, height * 0.38, 10, 10),
         width: width,
         height: height * 0.60,
         child: StreamBuilder<QuerySnapshot>(
-            stream:
-                FirebaseFirestore.instance.collection("MyTodos").snapshots(),
+            stream: FirebaseFirestore.instance.collection("MyTodos").where('owner', isEqualTo: owner).snapshots(),
+            //fetchAndFilterCollection(), //devrais filter les task pour juste afficher les bonne
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                return Text("Something went wrong");
+                return const Text("Something went wrong");
               } else if (snapshot.hasData || snapshot.data != null) {
                 return ListView.builder(
                     shrinkWrap: true,
@@ -254,9 +279,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               onTap: () => Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) =>
-                                          EditTaskScreen(Key(index.toString()),
-                                            (documentSnapshot != null) ? (documentSnapshot["todoTitle"]): ""))),
+                                      builder: (context) => EditTaskScreen(
+                                          Key(index.toString()),
+                                          (documentSnapshot != null)
+                                              ? (documentSnapshot["todoTitle"])
+                                              : ""))),
                               trailing: IconButton(
                                 color: Colors.red,
                                 icon: const Icon(Icons.delete),
@@ -289,12 +316,12 @@ class _HomeScreenState extends State<HomeScreen> {
     width = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
-        title: Text('TODO'),
+        title: const Text('TODO'),
         backgroundColor: Color.fromARGB(255, 129, 118, 226),
         centerTitle: true,
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.person),
+            icon: const Icon(Icons.person),
             onPressed: () {
               Navigator.push(
                   context,
@@ -303,7 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           IconButton(
-            icon: Icon(Icons.settings),
+            icon: const Icon(Icons.settings),
             onPressed: () {
               Navigator.push(
                   context,
@@ -324,7 +351,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 return AlertDialog(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
-                  title: const Text("Add ToDo"),
+                  title: const Text("Add To Do"),
                   content: Container(
                     width: 480,
                     height: 100,

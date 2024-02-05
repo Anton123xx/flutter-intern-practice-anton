@@ -18,7 +18,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('ACCOUNT'),
+        title: const Text('ACCOUNT'),
         backgroundColor: Color.fromARGB(255, 129, 118, 226),
         centerTitle: true,
       ),
@@ -28,11 +28,14 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text('User Email: ${user!.email}'),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                     Navigator.push(context,
+
+                    FirebaseAuth.instance.signOut();
+                    Navigator.push(context,
                       MaterialPageRoute(builder: (context) => const SignInScreen()));
+
                     },
                     child: const Text('Sign Out'),
                   ),
