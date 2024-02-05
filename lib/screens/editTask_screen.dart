@@ -51,6 +51,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                     const SizedBox(height: 16),
                     Row(
                       children: [
+                      /*
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () async {
@@ -72,6 +73,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                             ),
                           ),
                         ),
+                      */
                         const SizedBox(width: 16),
                         if (dueDate != null)
                           Text('Due Date: ${dueDate!.toLocal()}'),

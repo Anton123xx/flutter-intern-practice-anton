@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -8,51 +9,61 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  bool _darkMode = false; // Example setting
+  double _textSize = 16.0; // Example setting for text size
+  // Saving a setting
+  Future<void> _saveDarkModePreference(bool value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('darkMode', value);
+  }
+
+// Loading a setting
+  Future<void> _loadDarkModePreference() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _darkMode = prefs.getBool('darkMode') ?? false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-       title: Text('SETTINGS'),
-       backgroundColor: Color.fromARGB(255, 129, 118, 226),
-       centerTitle: true, 
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: AssetImage('assets/profile_picture.jpg'), // Replace with the path to the user's profile picture
-            ),
-            SizedBox(height: 16),
-            Text(
-              'John Doe', // Replace with the user's name
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'john.doe@example.com', // Replace with the user's email
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
-            ),
-            SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                // Add logout logic here
-                // For example, navigate to login screen
-                Navigator.pushReplacementNamed(context, '/login');
-              },
-              child: Text('Log Out'),
-            ),
-          ],
+        appBar: AppBar(
+          title: Text("Settings"),
         ),
-      ),
-    );
+        body: ListView(
+          children: <Widget>[
+            SwitchListTile(
+              title: Text("Dark Mode"),
+              value: _darkMode,
+              onChanged: (bool value) {
+                setState(() {
+                  //_darkMode = value;
+                  _saveDarkModePreference(value);
+                });
+              },
+            ),
+            ListTile(
+              title: Text("Text Size"),
+              trailing: Text(_textSize.toString()),
+            ),
+            Slider(
+              min: 10.0,
+              max: 30.0,
+              divisions: 20,
+              label: _textSize.round().toString(),
+              value: _textSize,
+              onChanged: (double value) {
+                setState(() {
+                  _textSize = value;
+                  // Implement functionality to change text size in your app.
+                });
+              },
+            ),
+            // Add more settings here
+          ],
+        ));
   }
+
+// Call _loadDarkModePreference() in initState() to load the setting when the screen initializes.
 }

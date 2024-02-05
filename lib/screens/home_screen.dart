@@ -58,6 +58,9 @@ class _HomeScreenState extends State<HomeScreen> {
     } else {
       owner = "null";
     }
+
+    //settings
+   // await _loadDarkModePreference();
   }
 
 // methode todo
