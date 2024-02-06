@@ -22,6 +22,7 @@ class MainApp extends StatelessWidget {
     return const MaterialApp(
       title: 'Defi Flutter',
       home: SignInScreen(),
+      
     );
   }
 }

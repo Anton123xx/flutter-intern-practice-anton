@@ -1,13 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:task_manager/screens/signIn_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
 import '../utils/date_utils.dart' as date_utils;
 import '../utils/colors_utils.dart' as color_utils;
 import 'accountInfo_screen.dart';
 import 'settings_screen.dart';
 import 'editTask_screen.dart';
+import '../controllers/firebaseFirestore_controller.dart';
 //(title, description, due date, priority)
 
 class HomeScreen extends StatefulWidget {
@@ -19,6 +18,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final FirebaseFirestore_Controller firestore_controller = new FirebaseFirestore_Controller();
+
   double width = 0;
   double height = 0;
 
@@ -63,29 +64,6 @@ class _HomeScreenState extends State<HomeScreen> {
    // await _loadDarkModePreference();
   }
 
-// methode todo
-  createToDo() {
-    DocumentReference documentReference =
-        FirebaseFirestore.instance.collection("MyTodos").doc(title);
-    Map<String, dynamic> todoList = {
-      "todoTitle": title,
-      "todoDesc": description,
-      "date": dueDate,
-      "priority": priority,
-      "owner": owner
-    };
-
-    documentReference
-        .set(todoList)
-        .whenComplete(() => print("Data stored succesfully"));
-  }
-
-  deleteToDo(item) {
-    DocumentReference documentReference =
-        FirebaseFirestore.instance.collection("MyTodos").doc(item);
-
-    documentReference.delete().whenComplete(() => print("Deleted succesfully"));
-  }
 
 //UI
   Widget backgroundView() {
@@ -244,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
         width: width,
         height: height * 0.60,
         child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance.collection("MyTodos").where('owner', isEqualTo: owner).snapshots(),
+            stream: firestore_controller.getCollectionSnapshotsOwner(owner),
             //fetchAndFilterCollection(), //devrais filter les task pour juste afficher les bonne
             builder: (context, snapshot) {
               if (snapshot.hasError) {
@@ -283,9 +261,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onPressed: () {
                                   setState(() {
                                     //todos.remove(index);
-                                    deleteToDo((documentSnapshot != null)
+                                    firestore_controller.deleteToDo((documentSnapshot != null)
                                         ? (documentSnapshot["todoTitle"])
                                         : "");
+                                    
                                   });
                                 },
                               ),
@@ -368,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () {
                           setState(() {
                             //todos.add(title);
-                            createToDo();
+                            firestore_controller.createToDo(title, description, dueDate, priority, owner);
                           });
                           Navigator.of(context).pop();
                         },

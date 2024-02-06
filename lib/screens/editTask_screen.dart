@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import '../controllers/firebaseFirestore_controller.dart';
 class EditTaskScreen extends StatefulWidget {
   final String? title;
   const EditTaskScreen(Key? key, this.title) :super(key: key);
-
+  
   @override
   State<EditTaskScreen> createState() => _EditTaskScreenState();
 }
 
 class _EditTaskScreenState extends State<EditTaskScreen> {
+  final FirebaseFirestore_Controller firestore_controller = new FirebaseFirestore_Controller();
   TextEditingController _titleController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
   DateTime? dueDate;
@@ -26,10 +25,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
             backgroundColor: const Color.fromARGB(255, 129, 118, 226),
             centerTitle: true),
         body: StreamBuilder<DocumentSnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection("MyTodos")
-              .doc(widget.title)
-              .snapshots(),
+          stream: firestore_controller.getCollectionSnapshots(widget.title),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
                 return const Text("Something went wrong");
@@ -109,9 +105,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                             'priority': priority,
                           };
                           // Update or add task data to Firestore
-                          await FirebaseFirestore.instance
-                              .collection('MyTodos')
-                              .doc(widget.title)
+                          await firestore_controller.getDocument(widget.title)
                               .set(taskData, SetOptions(merge: true))
                               .then((value) => Navigator.pop(context))
                               .onError((error, stackTrace) {
