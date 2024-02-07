@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:task_manager/screens/signIn_screen.dart';
 
 class AccountInfoScreen extends StatefulWidget {
   const AccountInfoScreen({super.key});
@@ -33,8 +32,11 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                     onPressed: () {
 
                     FirebaseAuth.instance.signOut();
-                    Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => const SignInScreen()));
+                    
+                    Navigator.pushNamed(context, '/signIn_screen');
+
+                    //Navigator.push(context,
+                    //  MaterialPageRoute(builder: (context) => const SignInScreen()));
 
                     },
                     child: const Text('Sign Out'),

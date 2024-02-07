@@ -1,9 +1,10 @@
-/*
-import 'package:signIn_Screen.dart';
-import 'package:test/test.dart';
+//import '/screens/signIn_Screen.dart';
+///import 'package:test/test.dart';
 
+/*
 void main() {
-  group('Test start, increment, decrement', () {
+
+  group('Test User, sign in / sign up', () {
     test('value should start at 0', () {
       expect(Counter().value, 0);
     });
@@ -24,6 +25,10 @@ void main() {
       expect(counter.value, -1);
     });
   });
+
+
+
+
 }
 
 */

@@ -1,9 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:task_manager/reusable_widget.dart/reusable_widgets.dart';
-import 'package:task_manager/screens/home_screen.dart';
-import 'package:task_manager/screens/signUp_screen.dart';
 import 'package:task_manager/utils/colors_utils.dart';
+import '../controllers/firebaseAuth_controller.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -13,6 +12,8 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
+  final FirebaseAuth_Controller firebaseAuth_controller = new FirebaseAuth_Controller();
+
   TextEditingController _emailTextController = TextEditingController();
   TextEditingController _passwordTextController = TextEditingController();
   @override
@@ -48,11 +49,17 @@ class _SignInScreenState extends State<SignInScreen> {
              ),
              signInsignUpButton(context, true, () {
               ////call 
+              firebaseAuth_controller.signIn(_emailTextController.text, _passwordTextController.text);
+              
+              
               FirebaseAuth.instance.signInWithEmailAndPassword(email: _emailTextController.text, 
                 password: _passwordTextController.text).then((value)
                  {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => const HomeScreen()));
+                  
+                  Navigator.pushNamed(context, '/home_screen');
+
+                  //Navigator.push(context,
+                     // MaterialPageRoute(builder: (context) => const HomeScreen()));
                 }).onError((error, stackTrace) {
                   print("Error ${error.toString()}");
                 });
@@ -75,8 +82,10 @@ class _SignInScreenState extends State<SignInScreen> {
         style:TextStyle(color:Colors.white70)),
         GestureDetector(
           onTap: () {
-            Navigator.push(context,
-               MaterialPageRoute(builder: (context) => const SignUpScreen()));  
+            Navigator.pushNamed(context, '/signUp_screen');
+
+            //Navigator.push(context,
+               //MaterialPageRoute(builder: (context) => const SignUpScreen()));  
           },
           child: const Text(
             "Sign Up",

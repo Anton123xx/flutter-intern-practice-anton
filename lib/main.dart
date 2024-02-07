@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:task_manager/Model/provider_model.dart';
+import 'package:task_manager/screens/accountInfo_screen.dart';
+import 'package:task_manager/screens/home_screen.dart';
+import 'package:task_manager/screens/settings_screen.dart';
 import 'package:task_manager/screens/signIn_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:task_manager/screens/signUp_screen.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -11,7 +17,14 @@ void main() async {
   );
 
   ///
-  runApp(const MainApp());
+  ///
+  
+  runApp(
+    ChangeNotifierProvider(create: (context) => ProviderModel(),
+    child: const MainApp()
+    ),
+    
+  );
 }
 
 class MainApp extends StatelessWidget {
@@ -19,9 +32,17 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: 'Defi Flutter',
-      home: SignInScreen(),
+      //home: SignInScreen(),
+      initialRoute: '/signIn_screen',
+      routes:{
+        '/signIn_screen': (context) => const SignInScreen(),
+        '/home_screen': (context) => const HomeScreen(),
+        '/signUp_screen': (context) => const SignUpScreen(),
+        '/settings_screen': (context) => const SettingsScreen(),
+        '/accountInfo_screen' :(context) => const AccountInfoScreen()
+      },
       
     );
   }

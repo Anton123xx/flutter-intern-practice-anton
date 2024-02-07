@@ -1,10 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+import 'package:task_manager/Model/provider_model.dart';
 import '../utils/date_utils.dart' as date_utils;
 import '../utils/colors_utils.dart' as color_utils;
-import 'accountInfo_screen.dart';
-import 'settings_screen.dart';
 import 'editTask_screen.dart';
 import '../controllers/firebaseFirestore_controller.dart';
 //(title, description, due date, priority)
@@ -18,7 +18,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final FirebaseFirestore_Controller firestore_controller = new FirebaseFirestore_Controller();
+  final FirebaseFirestore_Controller firestore_controller =
+      new FirebaseFirestore_Controller();
 
   double width = 0;
   double height = 0;
@@ -61,9 +62,8 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     //settings
-   // await _loadDarkModePreference();
+    // await _loadDarkModePreference();
   }
-
 
 //UI
   Widget backgroundView() {
@@ -93,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget horizontalCapsuleListView() {
+  Widget horizontalCapsuleListView(ProviderModel providerInstance) {
     return Container(
       width: width,
       height: 150,
@@ -104,13 +104,13 @@ class _HomeScreenState extends State<HomeScreen> {
         shrinkWrap: true,
         itemCount: currentMonthList.length,
         itemBuilder: (BuildContext context, int index) {
-          return capsuleView(index);
+          return capsuleView(index, providerInstance);
         },
       ),
     );
   }
 
-  Widget capsuleView(int index) {
+  Widget capsuleView(int index, ProviderModel providerInstance) {
     return Padding(
         padding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
         child: GestureDetector(
@@ -180,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ));
   }
 
-  Widget topView() {
+  Widget topView(ProviderModel providerInstance) {
     return Container(
       height: height * 0.35,
       width: width,
@@ -211,12 +211,12 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             titleView(),
-            horizontalCapsuleListView(),
+            horizontalCapsuleListView(providerInstance),
           ]),
     );
   }
 
-  Widget toDoListView() {
+  Widget toDoListView(ProviderModel providerInstance) {
     return Container(
         margin: EdgeInsets.fromLTRB(10, height * 0.38, 10, 10),
         width: width,
@@ -259,6 +259,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                 color: Colors.red,
                                 icon: const Icon(Icons.delete),
                                 onPressed: () {
+                                  //stu le bon context???
+                                  context.read<ProviderModel>().deleteTask(
+                                      (documentSnapshot != null)
+                                          ? (documentSnapshot["todoTitle"])
+                                          : "");
+
+                                  /*
                                   setState(() {
                                     //todos.remove(index);
                                     firestore_controller.deleteToDo((documentSnapshot != null)
@@ -266,6 +273,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         : "");
                                     
                                   });
+                                  */
                                 },
                               ),
                             ),
@@ -286,81 +294,98 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('TODO'),
-        backgroundColor: Color.fromARGB(255, 129, 118, 226),
-        centerTitle: true,
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () {
+    return Consumer<ProviderModel>(
+        builder: (context, providerInstance, child) => Scaffold(
+              appBar: AppBar(
+                title: const Text('TODO'),
+                backgroundColor: Color.fromARGB(255, 129, 118, 226),
+                centerTitle: true,
+                actions: <Widget>[
+                  IconButton(
+                    icon: const Icon(Icons.person),
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/accountInfo_screen');
+                      /*
               Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => const AccountInfoScreen()));
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
+              */
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.settings),
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/settings_screen');
+                      /*
               Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => const SettingsScreen()));
-            },
-          ),
-        ],
-      ),
-      body: Stack(
-        children: <Widget>[backgroundView(), topView(), toDoListView()],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  title: const Text("Add To Do"),
-                  content: Container(
-                    width: 480,
-                    height: 100,
-                    child: Column(
-                      children: [
-                        TextField(
-                          onChanged: (String value) {
-                            title = value;
-                          },
-                        ),
-                        TextField(
-                          onChanged: (String value) {
-                            description = value;
-                          },
-                        ),
-                      ],
-                    ),
+              */
+                    },
                   ),
-                  actions: <Widget>[
-                    TextButton(
-                        onPressed: () {
+                ],
+              ),
+              body: Stack(
+                children: <Widget>[
+                  backgroundView(),
+                  topView(providerInstance),
+                  toDoListView(providerInstance)
+                ],
+              ),
+              floatingActionButton: FloatingActionButton(
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          title: const Text("Add To Do"),
+                          content: Container(
+                            width: 480,
+                            height: 100,
+                            child: Column(
+                              children: [
+                                TextField(
+                                  onChanged: (String value) {
+                                    title = value;
+                                    //providerInstance.updateTitle(title);
+                                  },
+                                ),
+                                TextField(
+                                  onChanged: (String value) {
+                                    description = value;
+                                    //providerInstance.updateDescription(description);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                                onPressed: () {
+                                  context.read<ProviderModel>().addTask(title,
+                                      description, dueDate, priority, owner);
+                                  /*
                           setState(() {
                             //todos.add(title);
                             firestore_controller.createToDo(title, description, dueDate, priority, owner);
                           });
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text("Add"))
-                  ],
-                );
-              });
-        },
-        child: const Icon(
-          Icons.add,
-          color: Color.fromARGB(255, 220, 39, 39),
-        ),
-      ),
-    );
+                          */
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text("Add"))
+                          ],
+                        );
+                      });
+                },
+                child: const Icon(
+                  Icons.add,
+                  color: Color.fromARGB(255, 220, 39, 39),
+                ),
+              ),
+            ));
   }
 }
