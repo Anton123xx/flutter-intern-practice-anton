@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:task_manager/Model/provider_model.dart';
 import 'package:task_manager/screens/accountInfo_screen.dart';
 import 'package:task_manager/screens/home_screen.dart';
 import 'package:task_manager/screens/settings_screen.dart';
@@ -8,23 +6,21 @@ import 'package:task_manager/screens/signIn_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:task_manager/screens/signUp_screen.dart';
 import 'firebase_options.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+
 
 void main() async {
-  ////
+
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  ///
-  ///
+
   
-  runApp(
-    ChangeNotifierProvider(create: (context) => ProviderModel(),
-    child: const MainApp()
-    ),
-    
-  );
+  runApp(const ProviderScope(child: MainApp()));
 }
 
 class MainApp extends StatelessWidget {
