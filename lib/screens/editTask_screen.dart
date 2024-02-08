@@ -99,10 +99,11 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                     ElevatedButton(
                         onPressed: () async {
                           Map<String, dynamic> taskData = {
-                            'title': _titleController.text,
-                            'description': _descriptionController.text,
+                            'todoTitle': _titleController.text,
+                            'tododescription': _descriptionController.text,
                             'dueDate': dueDate,
                             'priority': priority,
+                             //'owner': owner
                           };
                           // Update or add task data to Firestore
                           await firestore_controller.getDocument(widget.title)

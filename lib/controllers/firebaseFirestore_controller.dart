@@ -31,7 +31,7 @@ return instance.collection("MyTodos");
     getCollection().doc(title).delete();
   }
 
-  void createToDo(String title, String description, DateTime? dueDate, String priority, String owner) {
+  void createToDo(String title, String description, DateTime? dueDate, String? priority, String owner) {
     getCollection().doc(title);
     Map<String, dynamic> todoList = {
       "todoTitle": title,

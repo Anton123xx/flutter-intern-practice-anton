@@ -35,8 +35,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                     
                     Navigator.pushNamed(context, '/signIn_screen');
 
-                    //Navigator.push(context,
-                    //  MaterialPageRoute(builder: (context) => const SignInScreen()));
+                
 
                     },
                     child: const Text('Sign Out'),

@@ -35,9 +35,9 @@ class _HomeScreenState extends State<HomeScreen> {
   String title = "";
   String description = "";
   DateTime? dueDate;
-  String priority = "Medium";
+  String? priority = "Medium";
   String owner = "";
-
+  List<String> priorities = ['Low', 'Medium', 'High'];
 //gerer current user
   User? user;
 
@@ -49,9 +49,6 @@ class _HomeScreenState extends State<HomeScreen> {
     currentMonthList = currentMonthList.toSet().toList();
     //scrollController = ScrollController(initialScrollOffset: 70.0 * currentDateTime.day);
     super.initState();
-
-//todo
-    todos = ["Hello", "Hey There", currentDateTime, "Medium"];
 
 //gerer current user
     user = FirebaseAuth.instance.currentUser;
@@ -93,8 +90,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget horizontalCapsuleListView(ProviderModel providerInstance) {
-    return Container(
+  Widget horizontalCapsuleListView() {
+    return SizedBox(
       width: width,
       height: 150,
       child: ListView.builder(
@@ -104,13 +101,13 @@ class _HomeScreenState extends State<HomeScreen> {
         shrinkWrap: true,
         itemCount: currentMonthList.length,
         itemBuilder: (BuildContext context, int index) {
-          return capsuleView(index, providerInstance);
+          return capsuleView(index);
         },
       ),
     );
   }
 
-  Widget capsuleView(int index, ProviderModel providerInstance) {
+  Widget capsuleView(int index) {
     return Padding(
         padding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
         child: GestureDetector(
@@ -180,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ));
   }
 
-  Widget topView(ProviderModel providerInstance) {
+  Widget topView() {
     return Container(
       height: height * 0.35,
       width: width,
@@ -211,12 +208,12 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             titleView(),
-            horizontalCapsuleListView(providerInstance),
+            horizontalCapsuleListView(),
           ]),
     );
   }
 
-  Widget toDoListView(ProviderModel providerInstance) {
+  Widget toDoListView() {
     return Container(
         margin: EdgeInsets.fromLTRB(10, height * 0.38, 10, 10),
         width: width,
@@ -260,20 +257,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                 icon: const Icon(Icons.delete),
                                 onPressed: () {
                                   //stu le bon context???
-                                  context.read<ProviderModel>().deleteTask(
-                                      (documentSnapshot != null)
-                                          ? (documentSnapshot["todoTitle"])
-                                          : "");
+                                  //context.read<ProviderModel>().deleteTask(
+                                  //(documentSnapshot != null)
+                                  // ? (documentSnapshot["todoTitle"])
+                                  // : "");
 
-                                  /*
                                   setState(() {
                                     //todos.remove(index);
-                                    firestore_controller.deleteToDo((documentSnapshot != null)
-                                        ? (documentSnapshot["todoTitle"])
-                                        : "");
-                                    
+                                    firestore_controller.deleteToDo(
+                                        (documentSnapshot != null)
+                                            ? (documentSnapshot["todoTitle"])
+                                            : "");
                                   });
-                                  */
                                 },
                               ),
                             ),
@@ -305,34 +300,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: const Icon(Icons.person),
                     onPressed: () {
                       Navigator.pushNamed(context, '/accountInfo_screen');
-                      /*
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const AccountInfoScreen()));
-              */
                     },
                   ),
                   IconButton(
                     icon: const Icon(Icons.settings),
                     onPressed: () {
                       Navigator.pushNamed(context, '/settings_screen');
-                      /*
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const SettingsScreen()));
-              */
                     },
                   ),
                 ],
               ),
               body: Stack(
-                children: <Widget>[
-                  backgroundView(),
-                  topView(providerInstance),
-                  toDoListView(providerInstance)
-                ],
+                children: <Widget>[backgroundView(), topView(), toDoListView()],
               ),
               floatingActionButton: FloatingActionButton(
                 onPressed: () {
@@ -343,37 +322,48 @@ class _HomeScreenState extends State<HomeScreen> {
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10)),
                           title: const Text("Add To Do"),
-                          content: Container(
+                          content: SizedBox(
                             width: 480,
-                            height: 100,
+                            height: 144,
                             child: Column(
                               children: [
                                 TextField(
                                   onChanged: (String value) {
                                     title = value;
-                                    //providerInstance.updateTitle(title);
                                   },
                                 ),
                                 TextField(
                                   onChanged: (String value) {
                                     description = value;
-                                    //providerInstance.updateDescription(description);
                                   },
                                 ),
+                                DropdownButtonFormField<String>(
+                                  items: priorities.map((String p) {
+                                    return DropdownMenuItem<String>(
+                                        value: p, child: Text(p));
+                                  }).toList(),
+                                  value: priorities[1],
+
+                                  ///par default?
+                                  onChanged: (String? value) {
+                                    priority = value;
+                                  },
+                                )
                               ],
                             ),
                           ),
                           actions: <Widget>[
                             TextButton(
                                 onPressed: () {
-                                  context.read<ProviderModel>().addTask(title,
-                                      description, dueDate, priority, owner);
-                                  /*
-                          setState(() {
-                            //todos.add(title);
-                            firestore_controller.createToDo(title, description, dueDate, priority, owner);
-                          });
-                          */
+                                  //context.read<ProviderModel>().addTask(title,
+                                  //description, dueDate, priority, owner);
+
+                                  setState(() {
+                                    //todos.add(title);
+                                    firestore_controller.createToDo(title,
+                                        description, dueDate, priority, owner);
+                                  });
+
                                   Navigator.of(context).pop();
                                 },
                                 child: const Text("Add"))
