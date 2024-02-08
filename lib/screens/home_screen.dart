@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart';
 import 'package:task_manager/Model/provider_model.dart';
 import '../utils/date_utils.dart' as date_utils;
@@ -9,15 +10,15 @@ import 'editTask_screen.dart';
 import '../controllers/firebaseFirestore_controller.dart';
 //(title, description, due date, priority)
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   final String title = "";
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   final FirebaseFirestore_Controller firestore_controller =
       new FirebaseFirestore_Controller();
 
@@ -289,93 +290,92 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
-    return Consumer<ProviderModel>(
-        builder: (context, providerInstance, child) => Scaffold(
-              appBar: AppBar(
-                title: const Text('TODO'),
-                backgroundColor: Color.fromARGB(255, 129, 118, 226),
-                centerTitle: true,
-                actions: <Widget>[
-                  IconButton(
-                    icon: const Icon(Icons.person),
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/accountInfo_screen');
-                    },
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('TODO'),
+        backgroundColor: Color.fromARGB(255, 129, 118, 226),
+        centerTitle: true,
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () {
+              Navigator.pushNamed(context, '/accountInfo_screen');
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.pushNamed(context, '/settings_screen');
+            },
+          ),
+        ],
+      ),
+      body: Stack(
+        children: <Widget>[backgroundView(), topView(), toDoListView()],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  title: const Text("Add To Do"),
+                  content: SizedBox(
+                    width: 480,
+                    height: 144,
+                    child: Column(
+                      children: [
+                        TextField(
+                          onChanged: (String value) {
+                            title = value;
+                          },
+                        ),
+                        TextField(
+                          onChanged: (String value) {
+                            description = value;
+                          },
+                        ),
+                        DropdownButtonFormField<String>(
+                          items: priorities.map((String p) {
+                            return DropdownMenuItem<String>(
+                                value: p, child: Text(p));
+                          }).toList(),
+                          value: priorities[1],
+
+                          ///par default?
+                          onChanged: (String? value) {
+                            priority = value;
+                          },
+                        )
+                      ],
+                    ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.settings),
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/settings_screen');
-                    },
-                  ),
-                ],
-              ),
-              body: Stack(
-                children: <Widget>[backgroundView(), topView(), toDoListView()],
-              ),
-              floatingActionButton: FloatingActionButton(
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                          title: const Text("Add To Do"),
-                          content: SizedBox(
-                            width: 480,
-                            height: 144,
-                            child: Column(
-                              children: [
-                                TextField(
-                                  onChanged: (String value) {
-                                    title = value;
-                                  },
-                                ),
-                                TextField(
-                                  onChanged: (String value) {
-                                    description = value;
-                                  },
-                                ),
-                                DropdownButtonFormField<String>(
-                                  items: priorities.map((String p) {
-                                    return DropdownMenuItem<String>(
-                                        value: p, child: Text(p));
-                                  }).toList(),
-                                  value: priorities[1],
+                  actions: <Widget>[
+                    TextButton(
+                        onPressed: () {
+                          //context.read<ProviderModel>().addTask(title,
+                          //description, dueDate, priority, owner);
 
-                                  ///par default?
-                                  onChanged: (String? value) {
-                                    priority = value;
-                                  },
-                                )
-                              ],
-                            ),
-                          ),
-                          actions: <Widget>[
-                            TextButton(
-                                onPressed: () {
-                                  //context.read<ProviderModel>().addTask(title,
-                                  //description, dueDate, priority, owner);
+                          setState(() {
+                            //todos.add(title);
+                            firestore_controller.createToDo(
+                                title, description, dueDate, priority, owner);
+                          });
 
-                                  setState(() {
-                                    //todos.add(title);
-                                    firestore_controller.createToDo(title,
-                                        description, dueDate, priority, owner);
-                                  });
-
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text("Add"))
-                          ],
-                        );
-                      });
-                },
-                child: const Icon(
-                  Icons.add,
-                  color: Color.fromARGB(255, 220, 39, 39),
-                ),
-              ),
-            ));
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text("Add"))
+                  ],
+                );
+              });
+        },
+        child: const Icon(
+          Icons.add,
+          color: Color.fromARGB(255, 220, 39, 39),
+        ),
+      ),
+    );
   }
 }
