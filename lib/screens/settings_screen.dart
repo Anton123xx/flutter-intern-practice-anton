@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:task_manager/Model/provider_model.dart';
 import 'package:task_manager/controllers/settings_controller.dart';
 
@@ -25,7 +24,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Consumer<ProviderModel>(
-      builder:(context, value, child) => Scaffold(
+      builder:(context, providerInstance, child) => Scaffold(
         appBar: AppBar(
           title: const Text("Settings"),
         ),
