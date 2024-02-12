@@ -1,29 +1,43 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../Model/task_model.dart'; // Import your Task model
+import 'package:task_manager/Model/task_model.dart';
 
-////////DEMANDE EXPLICATION
-///TASK LIST PROVIDER DEVRAIS ETRE CREER DANS QUELLE PAGE?????
-///CREER UN POUR CHAQUE PAGE???????
-/// 
-class TaskListNotifier extends StateNotifier<List<Task>> {
-  TaskListNotifier() : super([]);
-
-  void addTask(Task task) {
-    state = [...state, task];
+final currentUserProvider = StateProvider<String>((ref) {
+  String uid = FirebaseAuth.instance.currentUser!.uid.toString();
+  if (uid != null) {
+    return uid;
+  } else {
+    return "null";
   }
+});
 
-  void deleteTask(String taskId) {
-    state = state.where((task) => task.id != taskId).toList();
-  }
+final newTask = StateProvider<Task>((ref) {
+  return Task(
+      id: DateTime.now().toString(),
+      title: "newTask",
+      description: "",
+      dueDate: DateTime.now(),
+      priority: "low",
+      ownerId: "");
+});
 
-  void editTask(Task updatedTask) {
-    state = state.map((task) => task.id == updatedTask.id ? updatedTask : task).toList();
-  }
-}
-  
+final heightProvider = StateProvider<double>((ref) {
+  return 0;
+});
 
+final widthProvider = StateProvider<double>((ref) {
+  return 0;
+});
+
+final currentDateTimeProvider = StateProvider<DateTime>((ref) {
+  return DateTime.now();
+});
+
+final taskToEditProvider = StateProvider<Task?>((ref) {
+  return null;
+});
+
+final userProvider = StreamProvider<User?>((ref) => FirebaseAuth.instance.authStateChanges());
 
 
   

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:provider/provider.dart';
 import 'package:task_manager/Model/task_model.dart';
+import 'package:task_manager/riverpod/providers.dart';
 import 'package:task_manager/screens/home_screen.dart';
 
 class AddTaskScreen extends ConsumerWidget {

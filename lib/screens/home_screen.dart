@@ -2,45 +2,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:task_manager/Model/task_model.dart';
+import 'package:task_manager/riverpod/providers.dart';
 import '../utils/date_utils.dart' as date_utils;
 import '../utils/colors_utils.dart' as color_utils;
 
 //(title, description, due date, priority)
 
-final currentUserProvider = StateProvider<String>((ref) {
-  String uid = FirebaseAuth.instance.currentUser!.uid.toString();
-  if (uid != null) {
-    return uid;
-  } else {
-    return "null";
-  }
-});
 
-final newTask = StateProvider<Task>((ref) {
-  return Task(
-      id: DateTime.now().toString(),
-      title: "newTask",
-      description: "",
-      dueDate: DateTime.now(),
-      priority: "low",
-      ownerId: "");
-});
-
-final heightProvider = StateProvider<double>((ref) {
-  return 0;
-});
-
-final widthProvider = StateProvider<double>((ref) {
-  return 0;
-});
-
-final currentDateTimeProvider = StateProvider<DateTime>((ref) {
-  return DateTime.now();
-});
-
-final taskToEditProvider = StateProvider<Task?>((ref) {
-  return null;
-});
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -123,8 +91,7 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget horizontalCapsuleListView(
-      double width, DateTime currentDateTime, List<DateTime> currentMonthList) {
+  Widget horizontalCapsuleListView(double width, DateTime currentDateTime, List<DateTime> currentMonthList) {
     ScrollController scrollController =
         ScrollController(initialScrollOffset: 70.0 * currentDateTime.day);
     return SizedBox(
@@ -143,8 +110,7 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget capsuleView(
-      int index, DateTime currentDateTime, List<DateTime> currentMonthList) {
+  Widget capsuleView(int index, DateTime currentDateTime, List<DateTime> currentMonthList) {
     return Padding(
         padding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
         child: GestureDetector(
@@ -212,8 +178,7 @@ class HomeScreen extends ConsumerWidget {
         ));
   }
 
-  Widget topView(WidgetRef ref, double width, double height,
-      DateTime currentDateTime, List<DateTime> currentMonthList) {
+  Widget topView(WidgetRef ref, double width, double height, DateTime currentDateTime, List<DateTime> currentMonthList) {
     return Container(
       height: height * 0.35,
       width: width,
@@ -316,11 +281,10 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     //final double height = ref.watch(heightProvider.notifier).state = MediaQuery.of(context).size.height;
     // final double width = ref.watch(widthProvider.notifier).state = MediaQuery.of(context).size.width;
-    double height = 0;
-    double width = 0;
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
     
-    //final String currentUser =
-       // ref.watch(currentUserProvider as ProviderListenable<String>);
+    ref.watch(userProvider);
 
     //dateInitialisation();
     DateTime currentDateTime = ref.watch(currentDateTimeProvider);
