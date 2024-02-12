@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../controllers/firebaseFirestore_controller.dart';
+
 class EditTaskScreen extends StatefulWidget {
   final String? title;
   const EditTaskScreen(Key? key, this.title) :super(key: key);
@@ -99,8 +100,8 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                     ElevatedButton(
                         onPressed: () async {
                           Map<String, dynamic> taskData = {
-                            'todoTitle': _titleController.text,
-                            'tododescription': _descriptionController.text,
+                            'title': _titleController.text,
+                            'desc': _descriptionController.text,
                             'dueDate': dueDate,
                             'priority': priority,
                              //'owner': owner

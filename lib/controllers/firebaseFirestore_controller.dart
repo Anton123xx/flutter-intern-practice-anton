@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 ////comment faire?
 ///
@@ -9,14 +9,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 ///
 ///
 
-class FirebaseFirestore_Controller 
-{
+class FirebaseFirestore_Controller {
   final FirebaseFirestore instance = FirebaseFirestore.instance;
 
-
-  CollectionReference<Map<String, dynamic>> getCollection()
-  {
-return instance.collection("MyTodos");
+  CollectionReference<Map<String, dynamic>> getCollection() {
+    return instance.collection("MyTodos");
   }
 
   Stream<DocumentSnapshot<Object?>>? getCollectionSnapshots(String? title) {
@@ -31,24 +28,27 @@ return instance.collection("MyTodos");
     getCollection().doc(title).delete();
   }
 
-  void createToDo(String title, String description, DateTime? dueDate, String? priority, String owner) {
+  void createToDo(String title, String description, DateTime? dueDate,
+      String? priority, String owner) {
     getCollection().doc(title);
     Map<String, dynamic> todoList = {
-      "todoTitle": title,
-      "todoDesc": description,
-      "date": dueDate,
+      "id" : DateTime.now().toString(),
+      "title": title,
+      "desc": description,
+      "dueDate": dueDate,
       "priority": priority,
-      "owner": owner
+      "ownerId": owner
     };
 
     getCollection().doc(title).set(todoList);
-        
   }
-   
-   
-  DocumentReference<Map<String, dynamic>> getDocument(String? title)
-  {
+
+  DocumentReference<Map<String, dynamic>> getDocument(String? title) {
     return getCollection().doc(title);
   }
- 
+
+  final currentTask =
+      StateProvider<DocumentReference<Map<String, dynamic>>>((ref) {
+    return FirebaseFirestore.instance.collection("MyTodos").doc("newTask");
+  });
 }

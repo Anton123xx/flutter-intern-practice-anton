@@ -1,26 +1,55 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:provider/provider.dart';
-import 'package:task_manager/Model/provider_model.dart';
+import 'package:task_manager/Model/task_model.dart';
 import '../utils/date_utils.dart' as date_utils;
 import '../utils/colors_utils.dart' as color_utils;
-import 'editTask_screen.dart';
-import '../controllers/firebaseFirestore_controller.dart';
+
 //(title, description, due date, priority)
 
-class HomeScreen extends ConsumerStatefulWidget {
+final currentUserProvider = StateProvider<String>((ref) {
+  String uid = FirebaseAuth.instance.currentUser!.uid.toString();
+  if (uid != null) {
+    return uid;
+  } else {
+    return "null";
+  }
+});
+
+final newTask = StateProvider<Task>((ref) {
+  return Task(
+      id: DateTime.now().toString(),
+      title: "newTask",
+      description: "",
+      dueDate: DateTime.now(),
+      priority: "low",
+      ownerId: "");
+});
+
+final heightProvider = StateProvider<double>((ref) {
+  return 0;
+});
+
+final widthProvider = StateProvider<double>((ref) {
+  return 0;
+});
+
+final currentDateTimeProvider = StateProvider<DateTime>((ref) {
+  return DateTime.now();
+});
+
+final taskToEditProvider = StateProvider<Task?>((ref) {
+  return null;
+});
+
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
-  final String title = "";
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+  /*
   final FirebaseFirestore_Controller firestore_controller =
       new FirebaseFirestore_Controller();
+
+  
 
   double width = 0;
   double height = 0;
@@ -32,6 +61,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ScrollController(initialScrollOffset: 70.0 * currentDateTime.day);
 
 //todo
+
   List todos = List.empty();
   String title = "";
   String description = "";
@@ -39,6 +69,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   String? priority = "Medium";
   String owner = "";
   List<String> priorities = ['Low', 'Medium', 'High'];
+
 //gerer current user
   User? user;
 
@@ -62,6 +93,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     //settings
     // await _loadDarkModePreference();
   }
+  */
 
 //UI
   Widget backgroundView() {
@@ -78,7 +110,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget titleView() {
+  Widget titleView(DateTime currentDateTime, List<DateTime> currentMonthList) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
       child: Text(
@@ -91,7 +123,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget horizontalCapsuleListView() {
+  Widget horizontalCapsuleListView(
+      double width, DateTime currentDateTime, List<DateTime> currentMonthList) {
+    ScrollController scrollController =
+        ScrollController(initialScrollOffset: 70.0 * currentDateTime.day);
     return SizedBox(
       width: width,
       height: 150,
@@ -102,20 +137,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         shrinkWrap: true,
         itemCount: currentMonthList.length,
         itemBuilder: (BuildContext context, int index) {
-          return capsuleView(index);
+          return capsuleView(index, currentDateTime, currentMonthList);
         },
       ),
     );
   }
 
-  Widget capsuleView(int index) {
+  Widget capsuleView(
+      int index, DateTime currentDateTime, List<DateTime> currentMonthList) {
     return Padding(
         padding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
         child: GestureDetector(
           onTap: () {
-            setState(() {
-              currentDateTime = currentMonthList[index];
-            });
+            currentDateTime = currentMonthList[index]; ////??state
           },
           child: Container(
             width: 80,
@@ -178,7 +212,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ));
   }
 
-  Widget topView() {
+  Widget topView(WidgetRef ref, double width, double height,
+      DateTime currentDateTime, List<DateTime> currentMonthList) {
     return Container(
       height: height * 0.35,
       width: width,
@@ -208,44 +243,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            titleView(),
-            horizontalCapsuleListView(),
+            titleView(currentDateTime, currentMonthList),
+            horizontalCapsuleListView(width, currentDateTime, currentMonthList),
           ]),
     );
   }
 
-  Widget toDoListView() {
+  Widget toDoListView(WidgetRef ref, double width, double height) {
     return Container(
-        margin: EdgeInsets.fromLTRB(10, height * 0.38, 10, 10),
-        width: width,
-        height: height * 0.60,
-        child: StreamBuilder<QuerySnapshot>(
-            stream: firestore_controller.getCollectionSnapshotsOwner(owner),
+        margin:
+            EdgeInsets.fromLTRB(10, ref.read(heightProvider) * 0.38, 10, 10),
+        width: ref.read(widthProvider),
+        height: ref.read(heightProvider) * 0.60,
+        child: StreamBuilder<TaskList>(
+            stream: ref.watch(taskListProvider).stream,
+            //firestore_controller.getCollectionSnapshotsOwner(currentUser),
             //fetchAndFilterCollection(), //devrais filter les task pour juste afficher les bonne
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
+            builder: (context, stream) {
+              if (stream.hasError) {
                 return const Text("Something went wrong");
-              } else if (snapshot.hasData || snapshot.data != null) {
+              } else if (stream.hasData || stream.data != null) {
                 return ListView.builder(
                     shrinkWrap: true,
-                    itemCount: snapshot.data?.docs.length,
+                    itemCount: stream.data?.list.length,
                     itemBuilder: (BuildContext context, int index) {
-                      QueryDocumentSnapshot<Object?>? documentSnapshot =
-                          snapshot.data?.docs[index];
+                      Task task = stream.data!.list[index];
                       return Dismissible(
                           key: Key(index.toString()),
                           child: Card(
                             elevation: 4,
                             child: ListTile(
-                              title: Text((documentSnapshot != null)
-                                  ? (documentSnapshot["todoTitle"])
-                                  : ""),
-                              subtitle: Text((documentSnapshot != null)
-                                  ? ((documentSnapshot["todoDesc"] != null)
-                                      ? documentSnapshot["todoDesc"]
-                                      : "")
-                                  : ""),
-                              onTap: () => Navigator.push(
+                              title: Text(task.title),
+                              subtitle: Text(task.description),
+                              onTap: () => {
+                                ref.read(taskToEditProvider.notifier).state =
+                                    task,
+                                Navigator.pushNamed(context, '/addTask_screen')
+                              },
+                              ////?????? DOIT DONNER TASK
+                              /*VIELLE FACON
+                              Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => EditTaskScreen(
@@ -253,23 +290,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                           (documentSnapshot != null)
                                               ? (documentSnapshot["todoTitle"])
                                               : ""))),
+                              */
                               trailing: IconButton(
                                 color: Colors.red,
                                 icon: const Icon(Icons.delete),
                                 onPressed: () {
-                                  //stu le bon context???
-                                  //context.read<ProviderModel>().deleteTask(
-                                  //(documentSnapshot != null)
-                                  // ? (documentSnapshot["todoTitle"])
-                                  // : "");
-
-                                  setState(() {
-                                    //todos.remove(index);
-                                    firestore_controller.deleteToDo(
-                                        (documentSnapshot != null)
-                                            ? (documentSnapshot["todoTitle"])
-                                            : "");
-                                  });
+                                  ref.read(taskListProvider).deleteTask(task);
                                 },
                               ),
                             ),
@@ -287,9 +313,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    height = MediaQuery.of(context).size.height;
-    width = MediaQuery.of(context).size.width;
+  Widget build(BuildContext context, WidgetRef ref) {
+    //final double height = ref.watch(heightProvider.notifier).state = MediaQuery.of(context).size.height;
+    // final double width = ref.watch(widthProvider.notifier).state = MediaQuery.of(context).size.width;
+    double height = 0;
+    double width = 0;
+    
+    //final String currentUser =
+       // ref.watch(currentUserProvider as ProviderListenable<String>);
+
+    //dateInitialisation();
+    DateTime currentDateTime = ref.watch(currentDateTimeProvider);
+    List<DateTime> currentMonthList = List.empty();
+
+    currentMonthList = date_utils.DateUtils.daysInMonth(currentDateTime);
+    currentMonthList.sort((a, b) => a.day.compareTo(b.day));
+    currentMonthList = currentMonthList.toSet().toList();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('TODO'),
@@ -311,12 +351,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
       body: Stack(
-        children: <Widget>[backgroundView(), topView(), toDoListView()],
+        children: <Widget>[
+          backgroundView(),
+          topView(ref, width, height, currentDateTime, currentMonthList),
+          toDoListView(ref, height, width)
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          ref.read(taskToEditProvider.notifier).state = null;
+          Navigator.pushNamed(
+              context, '/addTask_screen'); ////?????? DOIT ETRE NULL
+          /*
           showDialog(
               context: context,
+              
               builder: (BuildContext context) {
                 return AlertDialog(
                   shape: RoundedRectangleBorder(
@@ -369,7 +418,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: const Text("Add"))
                   ],
                 );
+
+           
               });
+                   */
         },
         child: const Icon(
           Icons.add,
@@ -377,5 +429,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
     );
+  }
+
+  void dateInitialisation() {
+    List<DateTime> currentMonthList = List.empty();
+    DateTime currentDateTime = DateTime.now();
+
+    currentMonthList = date_utils.DateUtils.daysInMonth(currentDateTime);
+    currentMonthList.sort((a, b) => a.day.compareTo(b.day));
+    currentMonthList = currentMonthList.toSet().toList();
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:task_manager/screens/accountInfo_screen.dart';
+import 'package:task_manager/screens/addTask_screen.dart';
+import 'package:task_manager/screens/editTask_screen.dart';
 import 'package:task_manager/screens/home_screen.dart';
 import 'package:task_manager/screens/settings_screen.dart';
 import 'package:task_manager/screens/signIn_screen.dart';
@@ -37,7 +39,8 @@ class MainApp extends StatelessWidget {
         '/home_screen': (context) => const HomeScreen(),
         '/signUp_screen': (context) => const SignUpScreen(),
         '/settings_screen': (context) => const SettingsScreen(),
-        '/accountInfo_screen' :(context) => const AccountInfoScreen()
+        '/accountInfo_screen' :(context) => const AccountInfoScreen(),
+        '/addTask_screen' :(context) => AddTaskScreen()
       },
       
     );
