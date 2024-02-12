@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:task_manager/Model/task_model.dart';
 
 ////comment faire?
 ///
@@ -21,8 +22,20 @@ class FirebaseFirestore_Controller {
   }
 
   Stream<QuerySnapshot<Object?>>? getCollectionSnapshotsOwner(String? owner) {
-    return getCollection().where('owner', isEqualTo: owner).snapshots();
+    return getCollection().where('ownerId', isEqualTo: owner).snapshots();
   }
+
+  List<Task> fetchTasksByOwner(String ownerId) {
+    QuerySnapshot querySnapshot = getCollection().where('ownerId', isEqualTo: ownerId).get() as QuerySnapshot<Object?>;
+
+    List<Task> tasks = querySnapshot.docs.map((doc) {
+      return Task.fromFirestore(doc);
+    }).toList();
+
+    return tasks;
+  }
+
+ 
 
   void deleteToDo(title) {
     getCollection().doc(title).delete();
@@ -32,7 +45,7 @@ class FirebaseFirestore_Controller {
       String? priority, String owner) {
     getCollection().doc(title);
     Map<String, dynamic> todoList = {
-      "id" : DateTime.now().toString(),
+      "id": DateTime.now().toString(),
       "title": title,
       "desc": description,
       "dueDate": dueDate,

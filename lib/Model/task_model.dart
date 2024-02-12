@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:task_manager/controllers/firebaseFirestore_controller.dart';
 
 
 class Task {
@@ -44,8 +45,11 @@ class TaskList {
 
 
 List<Task> taskListPassed = [];
+//List<Task> taskListPassed = fetchTasksByOwner();
 
-class TaskListNotifier extends StateNotifier<TaskList> {
+class TaskListNotifier extends StateNotifier<TaskList> 
+{
+  final FirebaseFirestore_Controller firestoreController = FirebaseFirestore_Controller();
   TaskListNotifier()
       : super((TaskList(list: taskListPassed)));
 
@@ -53,13 +57,14 @@ class TaskListNotifier extends StateNotifier<TaskList> {
   void addTask(Task task) {
     final taskList = state.list;
     taskList.add(task);
-    
+    firestoreController.createToDo(task.title, task.description, task.dueDate, task.priority, task.ownerId);
     state = state;
   }
 
   void deleteTask(Task task) {
     final taskList = state.list;
     taskList.remove(task);
+    firestoreController.deleteToDo(task.title);
     state = state;
   }
 
@@ -70,6 +75,13 @@ class TaskListNotifier extends StateNotifier<TaskList> {
        
     });
     */
+    state = state;
+  }
+
+
+  void loadTasksByOwner(String ownerId)
+  {
+    taskListPassed = firestoreController.fetchTasksByOwner(ownerId); 
     state = state;
   }
 

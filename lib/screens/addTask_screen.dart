@@ -101,12 +101,11 @@ class AddTaskScreen extends ConsumerWidget {
                   description: descriptionController.text,
                   dueDate: isEditing ? taskToEdit!.dueDate : DateTime.now(),
                   priority: priorityController,
-                  ownerId: ref
-                      .read(currentUserProvider as ProviderListenable<String>),
+                  ownerId: ref.read(currentUserProvider)
 
                   ///????
                 );
-                if (isEditing) {
+                if (!isEditing) {
                   ref.read(taskListProvider).addTask(task);
                 } else {
                   ref.read(taskListProvider).editTask(task);
